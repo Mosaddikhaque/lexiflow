@@ -1,0 +1,245 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="LexiFlow — Professional translation and dictionary tool supporting 25+ languages."/>
+  <title>LexiFlow — Translate & Dictionary</title>
+  <link rel="stylesheet" href="{% static 'translator/css/style.css' %}"/>
+</head>
+<body>
+
+<!-- Ambient Background -->
+<div class="bg-orbs" aria-hidden="true">
+  <span></span><span></span><span></span>
+</div>
+
+<!-- Navigation -->
+<nav class="nav">
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-icon">⟿</div>
+    <span class="nav-logo-text">LexiFlow</span>
+  </a>
+
+  <div class="nav-tabs" role="tablist">
+    <button class="nav-tab active" role="tab" onclick="switchTab('translate', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M5 8l6 6M4 14l6-6 2-3M2 5h7M7 2v3M22 22l-5-10-5 10M14 18h6"/>
+      </svg>
+      <span>Translate</span>
+    </button>
+    <button class="nav-tab" role="tab" onclick="switchTab('dictionary', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+      </svg>
+      <span>Dictionary</span>
+    </button>
+  </div>
+
+  <div class="nav-meta">
+    <div class="nav-badge">
+      <span class="live-dot"></span>
+      25+ Languages
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<header class="hero">
+  <div class="hero-eyebrow">✦ AI-Powered Language Tools</div>
+  <h1>Speak Every<br/><em>Language Fluently</em></h1>
+  <p class="hero-sub">Instant translation & full dictionary with phonetics, examples, synonyms and more.</p>
+</header>
+
+<!-- Main -->
+<main class="container">
+
+  <!-- ══════════════════════════════════════
+       TRANSLATE TAB
+  ══════════════════════════════════════ -->
+  <section class="tab-panel active" id="tab-translate" role="tabpanel">
+    <div class="translator-card">
+
+      <!-- Language Bar -->
+      <div class="lang-bar">
+        <div class="lang-col">
+          <label for="sourceLang">Translate From</label>
+          <select class="lang-select" id="sourceLang" onchange="syncQuickChips()">
+            {% for code, name in languages.items %}
+              <option value="{{ code }}"{% if code == "auto" %} selected{% endif %}>{{ name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="swap-center">
+          <button class="swap-btn" onclick="swapLanguages()" title="Swap languages (Alt+S)" aria-label="Swap languages">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="lang-col">
+          <label for="targetLang">Translate To</label>
+          <select class="lang-select" id="targetLang" onchange="syncQuickChips()">
+            {% for code, name in languages.items %}
+              {% if code != "auto" %}
+                <option value="{{ code }}"{% if code == "bn" %} selected{% endif %}>{{ name }}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <!-- Text Areas -->
+      <div class="text-grid">
+        <!-- Source -->
+        <div class="text-panel">
+          <textarea
+            id="sourceText"
+            placeholder="Type or paste your text here…"
+            maxlength="5000"
+            oninput="updateCharCount()"
+            aria-label="Source text"
+          ></textarea>
+          <div class="panel-footer">
+            <span class="char-count" id="charCount">0 / 5000</span>
+            <div class="action-row">
+              <button class="icon-btn" onclick="speakText('source','source')" title="Listen to source">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                  <path d="M15.54 8.46a5 5 0 010 7.07"/>
+                </svg>
+              </button>
+              <button class="icon-btn" onclick="pasteText()" title="Paste (Ctrl+V)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/>
+                  <rect x="8" y="2" width="8" height="4" rx="1"/>
+                </svg>
+              </button>
+              <button class="icon-btn" onclick="clearSource()" title="Clear">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Output -->
+        <div class="text-panel">
+          <div class="output-area empty" id="outputArea" aria-live="polite" aria-label="Translation output">
+            Translation appears here…
+          </div>
+          <div class="panel-footer">
+            <span class="char-count" id="outputMeta"></span>
+            <div class="action-row">
+              <button class="icon-btn" onclick="speakText('output','target')" title="Listen to translation">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                  <path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/>
+                </svg>
+              </button>
+              <button class="icon-btn" id="copyOutputBtn" onclick="copyOutput()" title="Copy translation">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2"/>
+                  <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Translate Button -->
+      <button class="translate-btn" id="translateBtn" onclick="doTranslate()" aria-label="Translate (Ctrl+Enter)">
+        <div class="btn-spinner" aria-hidden="true"></div>
+        <span class="btn-label">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline;vertical-align:middle;margin-right:8px;">
+            <path d="M5 8l6 6M4 14l6-6 2-3M2 5h7M7 2v3M22 22l-5-10-5 10M14 18h6"/>
+          </svg>
+          Translate  <kbd style="opacity:.55;font-size:.75em;margin-left:8px;font-family:'DM Mono',monospace;">Ctrl+↵</kbd>
+        </span>
+      </button>
+
+      <!-- Quick Language Chips -->
+      <div class="quick-bar">
+        <span class="quick-label">Quick Switch:</span>
+        {% for ql in quick_langs %}
+          <button class="lang-chip{% if ql.code == 'bn' %} active{% endif %}"
+                  data-lang="{{ ql.code }}"
+                  onclick="quickLang(this)">{{ ql.label }}</button>
+        {% endfor %}
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       DICTIONARY TAB
+  ══════════════════════════════════════ -->
+  <section class="tab-panel" id="tab-dictionary" role="tabpanel">
+
+    <!-- Search -->
+    <div class="dict-top">
+      <div class="dict-input-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input
+          type="text"
+          class="dict-input"
+          id="dictInput"
+          placeholder="Search any English word…"
+          autocomplete="off"
+          spellcheck="false"
+          onkeydown="if(event.key==='Enter') lookupWord()"
+          aria-label="Dictionary search"
+        />
+      </div>
+      <button class="dict-search-btn" id="dictBtn" onclick="lookupWord()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>
+        Look Up
+      </button>
+    </div>
+
+    <div class="dict-layout">
+      <!-- Result Area -->
+      <div>
+        <div id="dictResultArea">
+          <div class="dict-empty">
+            <span class="empty-icon">📖</span>
+            <h3>Explore the Dictionary</h3>
+            <p>Search any English word to see definitions, phonetics, usage examples, synonyms &amp; antonyms.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- History Sidebar -->
+      <aside class="history-panel">
+        <div class="history-head">
+          <span>Recent</span>
+          <button class="clear-hist-btn" onclick="clearAllHistory()">Clear all</button>
+        </div>
+        <div class="history-items" id="historyItems">
+          <div class="history-empty">No recent searches yet</div>
+        </div>
+      </aside>
+    </div>
+
+  </section>
+
+</main>
+
+<!-- Toast Container -->
+<div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+<script src="{% static 'translator/js/app.js' %}"></script>
+</body>
+</html>
